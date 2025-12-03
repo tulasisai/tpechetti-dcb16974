@@ -1,0 +1,5 @@
+{
+  "name": "@turbovets/auth",
+  "version": "1.0.0",
+  "main": "src/index.ts"
+}

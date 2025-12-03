@@ -1,0 +1,19 @@
+{
+  "name": "turbovets-challenge",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "libs/*"
+  ],
+  "scripts": {
+    "api": "cd apps/api && npm start",
+    "dashboard": "cd apps/dashboard && npm start",
+    "api:dev": "cd apps/api && npm run start:dev",
+    "test:api": "cd apps/api && npm test",
+    "test:dashboard": "cd apps/dashboard && npm test"
+  },
+  "devDependencies": {
+    "typescript": "^4.8.4"
+  }
+}

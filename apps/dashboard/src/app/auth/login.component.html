@@ -1,0 +1,31 @@
+<div class="min-h-screen flex items-center justify-center p-4 bg-gray-100">
+  <div class="w-full max-w-md bg-white p-8 rounded shadow">
+    <h2 class="text-2xl font-bold mb-4">TurboVets Login</h2>
+    <form (submit)="$event.preventDefault(); submit()">
+      <input
+        [(ngModel)]="email"
+        name="email"
+        type="email"
+        placeholder="Email"
+        class="w-full mb-3 p-2 border rounded"
+      />
+      <input
+        [(ngModel)]="password"
+        name="password"
+        type="password"
+        placeholder="Password"
+        class="w-full mb-3 p-2 border rounded"
+      />
+      <button class="w-full p-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+        Login
+      </button>
+      <div *ngIf="error" class="text-red-600 mt-3">{{ error }}</div>
+    </form>
+    <div class="mt-4 text-sm text-gray-600">
+      <p>Test credentials:</p>
+      <p>owner@example.com / ownerpass</p>
+      <p>admin@example.com / adminpass</p>
+      <p>viewer@example.com / viewerpass</p>
+    </div>
+  </div>
+</div>
