@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TurboVets Test App</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1 { color: #333; margin-bottom: 10px; }
+        h2 { color: #666; font-size: 18px; margin-bottom: 15px; }
+        input, button { padding: 10px; margin: 5px 0; border-radius: 4px; border: 1px solid #ddd; font-size: 14px; }
+        input { width: 100%; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; width: auto; padding: 10px 20px; }
+        button:hover { background: #0056b3; }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        #tasks { margin-top: 20px; }
+        .task { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 4px; border-left: 4px solid #007bff; }
+        .task-actions { margin-top: 10px; }
+        .task-actions button { font-size: 12px; padding: 5px 10px; margin-right: 5px; }
+        .logout-btn { background: #dc3545; float: right; }
+        .logout-btn:hover { background: #c82333; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>TurboVets Task Manager - Quick Test</h1>
+            <p>Backend: <span id="backend-status">Checking...</span></p>
+        </div>
+
+        <div id="login-section" class="card">
+            <h2>Login</h2>
+            <input type="email" id="email" placeholder="Email" value="owner@example.com">
+            <input type="password" id="password" placeholder="Password" value="ownerpass">
+            <button onclick="login()">Login</button>
+            <p id="login-msg"></p>
+            <hr style="margin: 15px 0;">
+            <p><strong>Test Credentials:</strong></p>
+            <p>Owner: owner@example.com / ownerpass</p>
+            <p>Admin: admin@example.com / adminpass</p>
+            <p>Viewer: viewer@example.com / viewerpass</p>
+        </div>
+
+        <div id="app-section" class="card" style="display:none;">
+            <button onclick="logout()" class="logout-btn">Logout</button>
+            <h2>Task Management</h2>
+            <p>Logged in as: <span id="user-email"></span> (<span id="user-role"></span>)</p>
+            
+            <div style="margin-top: 20px;">
+                <h3>Create Task</h3>
+                <input type="text" id="task-title" placeholder="Task title">
+                <input type="text" id="task-desc" placeholder="Description (optional)">
+                <button onclick="createTask()">Create Task</button>
+            </div>
+
+            <div id="tasks"></div>
+        </div>
+    </div>
+
+    <script>
+        const API = 'http://localhost:3333';
+        let token = '';
+        let currentUser = {};
+
+        async function checkBackend() {
+            try {
+                const res = await fetch(`${API}/auth/login`, { method: 'POST' });
+                document.getElementById('backend-status').innerHTML = '<span class="success">✓ Running</span>';
+            } catch (e) {
+                document.getElementById('backend-status').innerHTML = '<span class="error">✗ Not Running</span>';
+            }
+        }
+
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const msg = document.getElementById('login-msg');
+            
+            try {
+                const res = await fetch(`${API}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    token = data.access_token;
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    currentUser = { email: payload.email, role: payload.role };
+                    
+                    document.getElementById('user-email').textContent = currentUser.email;
+                    document.getElementById('user-role').textContent = currentUser.role;
+                    document.getElementById('login-section').style.display = 'none';
+                    document.getElementById('app-section').style.display = 'block';
+                    loadTasks();
+                } else {
+                    msg.innerHTML = '<span class="error">Invalid credentials</span>';
+                }
+            } catch (e) {
+                msg.innerHTML = '<span class="error">Error: ' + e.message + '</span>';
+            }
+        }
+
+        function logout() {
+            token = '';
+            currentUser = {};
+            document.getElementById('login-section').style.display = 'block';
+            document.getElementById('app-section').style.display = 'none';
+            document.getElementById('tasks').innerHTML = '';
+        }
+
+        async function loadTasks() {
+            try {
+                const res = await fetch(`${API}/tasks`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const tasks = await res.json();
+                displayTasks(tasks);
+            } catch (e) {
+                document.getElementById('tasks').innerHTML = '<p class="error">Error loading tasks</p>';
+            }
+        }
+
+        function displayTasks(tasks) {
+            const container = document.getElementById('tasks');
+            if (tasks.length === 0) {
+                container.innerHTML = '<p>No tasks yet. Create one above!</p>';
+                return;
+            }
+            
+            container.innerHTML = '<h3>Your Tasks</h3>' + tasks.map(t => `
+                <div class="task">
+                    <strong>${t.title}</strong>
+                    <p>${t.description || ''}</p>
+                    <p><small>Status: ${t.status || 'todo'} | Created: ${new Date(t.createdAt).toLocaleString()}</small></p>
+                    <div class="task-actions">
+                        <button onclick="updateStatus('${t.id}', 'todo')">Todo</button>
+                        <button onclick="updateStatus('${t.id}', 'inprogress')">In Progress</button>
+                        <button onclick="updateStatus('${t.id}', 'done')">Done</button>
+                        <button onclick="deleteTask('${t.id}')" style="background:#dc3545">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function createTask() {
+            const title = document.getElementById('task-title').value;
+            const description = document.getElementById('task-desc').value;
+            
+            if (!title) {
+                alert('Please enter a task title');
+                return;
+            }
+            
+            try {
+                const res = await fetch(`${API}/tasks`, {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ title, description })
+                });
+                
+                if (res.ok) {
+                    document.getElementById('task-title').value = '';
+                    document.getElementById('task-desc').value = '';
+                    loadTasks();
+                } else {
+                    const error = await res.json();
+                    alert('Error: ' + (error.message || 'Permission denied'));
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        async function updateStatus(id, status) {
+            try {
+                const res = await fetch(`${API}/tasks/${id}`, {
+                    method: 'PUT',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status })
+                });
+                
+                if (res.ok) {
+                    loadTasks();
+                } else {
+                    alert('Permission denied');
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        async function deleteTask(id) {
+            if (!confirm('Delete this task?')) return;
+            
+            try {
+                const res = await fetch(`${API}/tasks/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (res.ok) {
+                    loadTasks();
+                } else {
+                    alert('Permission denied - Only Owner can delete');
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        checkBackend();
+    </script>
+</body>
+</html>
