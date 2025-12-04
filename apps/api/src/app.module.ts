@@ -8,10 +8,11 @@ import { AuditModule } from "./audit/audit.module";
 import { AuditInterceptor } from "./audit/audit.interceptor";
 import { AppDataSource } from "../ormconfig";
 import { UsersService } from "./users/users.service";
+import { AppController } from "./app.controller";
 
 @Module({
   imports: [AuthModule, UsersModule, TasksModule, OrgsModule, AuditModule],
-  controllers: [],
+  controllers: [AppController],
   providers: [
     {
       provide: APP_INTERCEPTOR,

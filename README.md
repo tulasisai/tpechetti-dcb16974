@@ -27,24 +27,37 @@ tpechetti-dcb16974/
 - Node.js 16+ and npm
 - Git
 
-### Backend Setup
+### Quick Start (Recommended)
+
+**Step 1: Install Dependencies**
+```bash
+npm install
+```
+
+**Step 2: Start Backend**
 ```bash
 cd apps/api
-npm install
-cp .env.example .env
-npm run start
+node -r ts-node/register -r tsconfig-paths/register src/main.ts
+```
+Backend will run on `http://127.0.0.1:3333`
+
+**Step 3: Open Frontend**
+Open `file:///D:/tpechetti-dcb16974/test-app.html` in your browser (or use the absolute path to your project location).
+
+### Alternative: Using npm scripts
+
+**Backend:**
+```bash
+cd apps/api
+npm run start:dev
 ```
 
-Backend will run on `http://localhost:3333`
-
-### Frontend Setup
+**Frontend (if Angular dev server works on your system):**
 ```bash
 cd apps/dashboard
-npm install
 npm start
 ```
-
-Frontend will run on `http://localhost:4200` with API proxy configured.
+Note: Due to Windows networking issues, the Angular dev server may not bind to ports. Use `test-app.html` as a fully functional alternative.
 
 ### Environment Variables
 Create `apps/api/.env` with:
@@ -56,10 +69,25 @@ PORT=3333
 
 ### Default Test Users
 ```
-owner@example.com / ownerpass
-admin@example.com / adminpass  
-viewer@example.com / viewerpass
+owner@example.com / ownerpass   (Full access - create/edit/delete)
+admin@example.com / adminpass   (Can create/edit, cannot delete)
+viewer@example.com / viewerpass (Read-only access)
 ```
+
+### Frontend Access Options
+
+**Option 1: test-app.html (Recommended - Always Works)**
+- Open `test-app.html` directly in your browser
+- Full functionality: Login, CRUD operations, RBAC testing
+- No dev server needed
+- File location: `file:///path/to/tpechetti-dcb16974/test-app.html`
+
+**Option 2: Angular Dashboard (If Available)**
+- Navigate to `http://localhost:4200` after running `npm start` in apps/dashboard
+- Note: May not work on all Windows systems due to port binding issues
+
+**Option 3: Backend API Status**
+- Visit `http://127.0.0.1:3333` to see API status and available endpoints
 
 ## Architecture
 
