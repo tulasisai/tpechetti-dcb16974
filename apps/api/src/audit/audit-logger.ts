@@ -4,6 +4,7 @@ export interface AuditEntry {
   method: string;
   url: string;
   statusCode?: number;
+  duration?: number;
 }
 
 export class AuditLogger {
@@ -17,7 +18,7 @@ export class AuditLogger {
   }
 
   static getAll(): AuditEntry[] {
-    return [...this.logs];
+    return this.logs;
   }
 
   static clear() {
