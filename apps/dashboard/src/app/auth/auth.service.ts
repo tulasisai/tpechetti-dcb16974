@@ -1,6 +1,8 @@
 import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 
+const API = "http://localhost:3333";
+
 @Injectable({ providedIn: "root" })
 export class AuthService {
   tokenKey = "tv_token";
@@ -8,7 +10,7 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   login(email: string, password: string) {
-    return this.http.post("/api/auth/login", { email, password });
+    return this.http.post(`${API}/auth/login`, { email, password });
   }
 
   setToken(token: string) {

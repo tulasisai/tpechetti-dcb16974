@@ -11,7 +11,13 @@ export class LoginComponent {
   password = "";
   error = "";
 
-  constructor(private auth: AuthService, private router: Router) {}
+  constructor(private auth: AuthService, private router: Router) {
+    // Apply dark mode if set
+    const darkMode = localStorage.getItem('darkMode');
+    if (darkMode === 'true') {
+      document.documentElement.classList.add('dark');
+    }
+  }
 
   submit() {
     this.auth.login(this.email, this.password).subscribe(
